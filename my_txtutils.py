@@ -13,56 +13,147 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
 import numpy as np
 import glob
 import sys
 
 # size of the alphabet that we work with
-ALPHASIZE = 98
+ALPHASIZE = 38;
 
+farsiToPingilish = {
+    0 : 'a',
+    1 : 'a',
+    2 : 'b',
+    3 : 'p',
+    4 : 't',
+    5 : 's',
+    6 : 'j',
+    7 : 'ch',
+    8 : 'h',
+    9 : 'kh',
+    10 : 'd',
+    11 : 'z',
+    12 : 'r',
+    13 : 'z',
+    14 : 'zh',
+    15 : 's',
+    16 : 'sh',
+    17 : 's',
+    18 : 'z',
+    19 : 't',
+    20 : 'z',
+    21 : 'e',
+    22 : 'gh',
+    23 : 'f',
+    24 : 'gh',
+    25 : 'k',
+    26 : 'g',
+    27 : 'l',
+    28 : 'm',
+    29 : 'n',
+    30 : 'v',
+    31 : 'h',
+    32 : 'y',
+    33 : 'y',
+    34 : '\n',
+    35 : '\t',
+    36 : ' ',
+    37 : '',
+}
 
-# Specification of the supported alphabet (subset of ASCII-7)
-# 10 line feed LF
-# 32-64 numbers and punctuation
-# 65-90 upper-case letters
-# 91-97 more punctuation
-# 97-122 lower-case letters
-# 123-126 more punctuation
+alphaToNum = {
+    1570 : 0,
+    1575 : 1,
+    1576 : 2,
+    1662 : 3,
+    1578 : 4,
+    1579 : 5,
+    1580 : 6,
+    1670 : 7,
+    1581 : 8,
+    1582 : 9,
+    1583 : 10,
+    1584 : 11,
+    1585 : 12,
+    1586 : 13,
+    1688 : 14,
+    1587 : 15,
+    1588 : 16,
+    1589 : 17,
+    1590 : 18,
+    1591 : 19,
+    1592 : 20,
+    1593 : 21,
+    1594 : 22,
+    1601 : 23,
+    1602 : 24,
+    1705 : 25,
+    1711 : 26,
+    1604 : 27,
+    1605 : 28,
+    1606 : 29,
+    1608 : 30,
+    1607 : 31,
+    1740 : 32,
+    1574 : 33,
+    10 : 34, # new line
+    9 : 35, # tab
+    32 : 36, # space
+    0 : 37 # nothing
+}
+
+numToAlpha = {v: k for k, v in alphaToNum.iteritems()}
+
 def convert_from_alphabet(a):
     """Encode a character
     :param a: one character
     :return: the encoded value
     """
-    if a == 9:
-        return 1
-    if a == 10:
-        return 127 - 30  # LF
-    elif 32 <= a <= 126:
-        return a - 30
+    if alphaToNum.has_key(a):
+        return alphaToNum[a]
     else:
-        return 0  # unknown
+        return alphaToNum[0]  # unknown
 
 
-# encoded values:
-# unknown = 0
-# tab = 1
-# space = 2
-# all chars from 32 to 126 = c-30
-# LF mapped to 127-30
 def convert_to_alphabet(c, avoid_tab_and_lf=False):
     """Decode a code point
     :param c: code point
     :param avoid_tab_and_lf: if True, tab and line feed characters are replaced by '\'
     :return: decoded character
     """
-    if c == 1:
+    if c == 35:
         return 32 if avoid_tab_and_lf else 9  # space instead of TAB
-    if c == 127 - 30:
+    if c == 34:
         return 92 if avoid_tab_and_lf else 10  # \ instead of LF
-    if 32 <= c + 30 <= 126:
-        return c + 30
+    if numToAlpha.has_key(c):
+        return numToAlpha[c]
     else:
-        return 0  # unknown
+        return numToAlpha[0]  # unknown
+
+def convert_to_alphabet_viz(c, avoid_tab_and_lf=False):
+    """Decode a code point
+    :param c: code point
+    :param avoid_tab_and_lf: if True, tab and line feed characters are replaced by '\'
+    :return: decoded character
+    """
+    if c == 35:
+        return ' ' if avoid_tab_and_lf else '\t'  # space instead of TAB
+    if c == 34:
+        return '\\' if avoid_tab_and_lf else '\n'  # \ instead of LF
+    if farsiToPingilish.has_key(c):
+        return farsiToPingilish[c]
+    else:
+        return farsiToPingilish[0]  # unknown
+
+
+def decode_to_text_viz(c, avoid_tab_and_lf=False):
+    """Decode an encoded string.
+    :param c: encoded list of code points
+    :param avoid_tab_and_lf: if True, tab and line feed characters are replaced by '\'
+    :return:
+    """
+    return "".join(map(lambda a: convert_to_alphabet_viz(a, avoid_tab_and_lf), c))
 
 
 def encode_text(s):
@@ -79,7 +170,7 @@ def decode_to_text(c, avoid_tab_and_lf=False):
     :param avoid_tab_and_lf: if True, tab and line feed characters are replaced by '\'
     :return:
     """
-    return "".join(map(lambda a: chr(convert_to_alphabet(a, avoid_tab_and_lf)), c))
+    return "".join(map(lambda a: unichr(convert_to_alphabet(a, avoid_tab_and_lf)), c))
 
 
 def sample_from_probabilities(probabilities, topn=ALPHASIZE):
@@ -149,13 +240,13 @@ def print_learning_learned_comparison(X, Y, losses, bookranges, batch_loss, batc
     start_index_in_epoch = index % (epoch_size * batch_size * sequence_len)
     for k in range(batch_size):
         index_in_epoch = index % (epoch_size * batch_size * sequence_len)
-        decx = decode_to_text(X[k], avoid_tab_and_lf=True)
-        decy = decode_to_text(Y[k], avoid_tab_and_lf=True)
+        decx = decode_to_text_viz(X[k], avoid_tab_and_lf=True)
+        decy = decode_to_text_viz(Y[k], avoid_tab_and_lf=True)
         bookname = find_book(index_in_epoch, bookranges)
         formatted_bookname = "{: <10.40}".format(bookname)  # min 10 and max 40 chars
         epoch_string = "{:4d}".format(index) + " (epoch {}) ".format(epoch)
-        loss_string = "loss: {:.5f}".format(losses[k])
-        print_string = epoch_string + formatted_bookname + " │ {} │ {} │ {}"
+        loss_string = ("loss: {:.5f}".format(losses[k]))
+        print_string = (epoch_string + formatted_bookname + " │ {} │ {} │ {}")
         print(print_string.format(decx, decy, loss_string))
         index += sequence_len
     # box formatting characters:
@@ -171,8 +262,9 @@ def print_learning_learned_comparison(X, Y, losses, bookranges, batch_loss, batc
     format_string += "┴{:─^" + str(len(decx) + 2) + "}"
     format_string += "┴{:─^" + str(len(decy) + 2) + "}"
     format_string += "┴{:─^" + str(len(loss_string)) + "}┘"
-    footer = format_string.format('INDEX', 'BOOK NAME', 'TRAINING SEQUENCE', 'PREDICTED SEQUENCE', 'LOSS')
-    print(footer)
+    #footer = format_string.format('INDEX', 'BOOK NAME', 'TRAINING SEQUENCE', 'PREDICTED SEQUENCE', 'LOSS')
+    #print(footer)
+    print(format_string)
     # print statistics
     batch_index = start_index_in_epoch // (batch_size * sequence_len)
     batch_string = "batch {}/{} in epoch {},".format(batch_index, epoch_size, epoch)
@@ -224,7 +316,7 @@ class Progress:
             for x in range(maxi):
                 k = 0
                 while d >= 0:
-                    print('=', end="", flush=True)
+                    print('=', end="")
                     k += 1
                     d -= dx
                 d += dy
@@ -244,12 +336,12 @@ def read_data_files(directory, validation=True):
     """
     codetext = []
     bookranges = []
-    shakelist = glob.glob(directory, recursive=True)
+    shakelist = glob.glob(directory + "**")
     for shakefile in shakelist:
         shaketext = open(shakefile, "r")
         print("Loading file " + shakefile)
         start = len(codetext)
-        codetext.extend(encode_text(shaketext.read()))
+        codetext.extend(encode_text(shaketext.read().decode('utf8')))
         end = len(codetext)
         bookranges.append({"start": start, "end": end, "name": shakefile.rsplit("/", 1)[-1]})
         shaketext.close()
@@ -309,7 +401,7 @@ def print_validation_header(validation_start, bookranges):
         books += bookranges[i]["name"]
         if i < len(bookranges)-1:
             books += ", "
-    print("{: <60}".format("Validating on " + books), flush=True)
+    print("Validating on " + books)
 
 
 def print_validation_stats(loss, accuracy):
@@ -319,12 +411,12 @@ def print_validation_stats(loss, accuracy):
 
 def print_text_generation_header():
     print()
-    print("┌{:─^111}┐".format('Generating random text from learned state'))
+    print("Generating random text from learned state")
 
 
 def print_text_generation_footer():
     print()
-    print("└{:─^111}┘".format('End of generation'))
+    print('End of generation')
 
 
 def frequency_limiter(n, multiple=1, modulo=0):

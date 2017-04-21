@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import print_function
 
 import tensorflow as tf
 from tensorflow.contrib import layers
@@ -46,7 +47,7 @@ learning_rate = 0.001  # fixed learning rate
 dropout_pkeep = 1.0    # no dropout
 
 # load data, either shakespeare, or the Python source of Tensorflow itself
-shakedir = "shakespeare/*.txt"
+shakedir = "ganjoor-scrapy/shahname/"
 # shakedir = "../tensorflow/**/*.py"
 codetext, valitext, bookranges = txt.read_data_files(shakedir, validation=True)
 
@@ -172,7 +173,7 @@ for x, y_, epoch in txt.rnn_minibatch_sequencer(codetext, BATCHSIZE, SEQLEN, nb_
         for k in range(1000):
             ryo, rh = sess.run([Yo, H], feed_dict={X: ry, pkeep: 1.0, Hin: rh, batchsize: 1})
             rc = txt.sample_from_probabilities(ryo, topn=10 if epoch <= 1 else 2)
-            print(chr(txt.convert_to_alphabet(rc)), end="")
+            print(txt.convert_to_alphabet_viz(rc), end="")
             ry = np.array([[rc]])
         txt.print_text_generation_footer()
 
