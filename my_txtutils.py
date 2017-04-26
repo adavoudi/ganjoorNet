@@ -19,7 +19,7 @@ import glob
 import sys
 
 # size of the alphabet that we work with
-ALPHASIZE = 38;
+ALPHASIZE = 40;
 
 farsiToPingilish = {
     0 : 'a',
@@ -60,6 +60,8 @@ farsiToPingilish = {
     35 : '\t',
     36 : ' ',
     37 : '',
+    38 : '-',
+    39 : '-',
 }
 
 alphaToNum = {
@@ -100,7 +102,9 @@ alphaToNum = {
     10 : 34, # new line
     9 : 35, # tab
     32 : 36, # space
-    0 : 37 # nothing
+    0 : 37, # nothing
+    1000 : 38, # start of poem
+    2000 : 39, # end of poem
 }
 
 numToAlpha = {v: k for k, v in alphaToNum.iteritems()}
@@ -126,6 +130,8 @@ def convert_to_alphabet(c, avoid_tab_and_lf=False):
         return 32 if avoid_tab_and_lf else 9  # space instead of TAB
     if c == 34:
         return 92 if avoid_tab_and_lf else 10  # \ instead of LF
+    if c == 38 or c == 39: # start of poem
+	return 45 # ie '-'
     if numToAlpha.has_key(c):
         return numToAlpha[c]
     else:
@@ -141,6 +147,8 @@ def convert_to_alphabet_viz(c, avoid_tab_and_lf=False):
         return ' ' if avoid_tab_and_lf else '\t'  # space instead of TAB
     if c == 34:
         return '\\' if avoid_tab_and_lf else '\n'  # \ instead of LF
+    if c == 38 or c == 39: # start of poem
+        return 45 # ie '-'
     if farsiToPingilish.has_key(c):
         return farsiToPingilish[c]
     else:
@@ -161,6 +169,7 @@ def encode_text(s):
     :param s: a text string
     :return: encoded list of code points
     """
+
     return list(map(lambda a: convert_from_alphabet(ord(a)), s))
 
 
@@ -264,7 +273,7 @@ def print_learning_learned_comparison(X, Y, losses, bookranges, batch_loss, batc
     format_string += "┴{:─^" + str(len(loss_string)) + "}┘"
     #footer = format_string.format('INDEX', 'BOOK NAME', 'TRAINING SEQUENCE', 'PREDICTED SEQUENCE', 'LOSS')
     #print(footer)
-    print(format_string)
+    #print(format_string)
     # print statistics
     batch_index = start_index_in_epoch // (batch_size * sequence_len)
     batch_string = "batch {}/{} in epoch {},".format(batch_index, epoch_size, epoch)
@@ -341,7 +350,9 @@ def read_data_files(directory, validation=True):
         shaketext = open(shakefile, "r")
         print("Loading file " + shakefile)
         start = len(codetext)
+	codetext.extend([1000, 34])
         codetext.extend(encode_text(shaketext.read().decode('utf8')))
+	codetext.extend([34,2000])
         end = len(codetext)
         bookranges.append({"start": start, "end": end, "name": shakefile.rsplit("/", 1)[-1]})
         shaketext.close()

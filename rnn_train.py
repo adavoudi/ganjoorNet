@@ -42,14 +42,14 @@ SEQLEN = 30
 BATCHSIZE = 100
 ALPHASIZE = txt.ALPHASIZE
 INTERNALSIZE = 512
-NLAYERS = 3
+NLAYERS = 4
 learning_rate = 0.001  # fixed learning rate
 dropout_pkeep = 1.0    # no dropout
 
 # load data, either shakespeare, or the Python source of Tensorflow itself
-shakedir = "ganjoor-scrapy/shahname/"
+shakedir = "ganjoor-full/"
 # shakedir = "../tensorflow/**/*.py"
-codetext, valitext, bookranges = txt.read_data_files(shakedir, validation=True)
+codetext, valitext, bookranges = txt.read_data_files(shakedir, validation=False)
 
 # display some stats on the data
 epoch_size = len(codetext) // (BATCHSIZE * SEQLEN)
