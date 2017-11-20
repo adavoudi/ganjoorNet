@@ -111,7 +111,7 @@ def save_model(encoder, decoder, encoder_optimizer, decoder_optimizer, epoch, ck
     for key in encoder_state_dict.keys():
         encoder_state_dict[key] = encoder_state_dict[key].cpu()
 
-    decoder_state_dict = encoder.state_dict()
+    decoder_state_dict = decoder.state_dict()
     for key in decoder_state_dict.keys():
         decoder_state_dict[key] = decoder_state_dict[key].cpu()
 
@@ -125,10 +125,6 @@ def save_model(encoder, decoder, encoder_optimizer, decoder_optimizer, epoch, ck
 
 def trainIters(encoder, decoder, encoder_optimizer, decoder_optimizer, lines):
     
-    # start = time.time()
-    # plot_losses = []
-    # print_loss_total = 0  # Reset every print_every
-    # plot_loss_total = 0  # Reset every plot_every
     criterion = nn.NLLLoss()
 
     pbar = tqdm(range(1, len(lines)-1))
@@ -141,22 +137,8 @@ def trainIters(encoder, decoder, encoder_optimizer, decoder_optimizer, lines):
 
         loss = train(input_variable, target_variable, encoder,
                      decoder, encoder_optimizer, decoder_optimizer, criterion)
-        # print_loss_total += loss
-        # plot_loss_total += loss
-
-        # if iter % print_every == 0:
-        # print_loss_avg = print_loss_total / print_every
+        
         pbar.set_description('%.4f' % loss)
-            # print_loss_total = 0
-            # print('%s (%d %d%%) %.4f' % (timeSince(start, iter / n_iters),
-            #                              iter, iter / n_iters * 100, print_loss_avg))
-
-        # if iter % plot_every == 0:
-        #     plot_loss_avg = plot_loss_total / plot_every
-        #     plot_losses.append(plot_loss_avg)
-        #     plot_loss_total = 0
-
-    # showPlot(plot_losses)
 
 
 if __name__ == '__main__':
@@ -177,24 +159,26 @@ if __name__ == '__main__':
     decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
     
     if continue_from_file is not None:
-        state_dict = torch.load(continue_from_file)
-        encoder_state_dict = OrderedDict()
-        for k, value in state_dict['encoder_state_dict'].items():
-            key = "module.{}".format(k)
-            encoder_state_dict[key] = value
+        if not use_cuda:
+            state_dict = torch.load(continue_from_file, map_location={'cuda:0': 'cpu'})
+        else:
+            state_dict = torch.load(continue_from_file)
+        
+        encoder_state_dict = state_dict['encoder_state_dict']#OrderedDict()
         encoder.load_state_dict(encoder_state_dict)
-        decoder_state_dict = OrderedDict()
-        for k, value in state_dict['decoder_state_dict'].items():
-            key = "module.{}".format(k)
-            decoder_state_dict[key] = value
+        
+        decoder_state_dict = state_dict['decoder_state_dict']#OrderedDict()
         decoder.load_state_dict(decoder_state_dict)
+
         encoder_optimizer = state_dict['encoder_optimizer']
         decoder_optimizer = state_dict['decoder_optimizer']
+        
         init_epoch = state_dict['epoch']
         print("pre-trained epoch number: {}".format(init_epoch))
 
     lines = utils.readPoems('/home/reza/projects/ganjoorNet/ganjoor-scrapy/shahname/*.txt')
 
+    print(use_cuda)
     if use_cuda:
         encoder = encoder.cuda()
         decoder = decoder.cuda()
