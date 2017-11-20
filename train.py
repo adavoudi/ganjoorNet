@@ -144,7 +144,8 @@ def trainIters(encoder, decoder, encoder_optimizer, decoder_optimizer, lines):
 if __name__ == '__main__':
 
     continue_from_file = None
-    hidden_size = 256
+    hidden_size = 1024
+    num_layers = 3
     init_epoch = 0
     max_epoch = 4
     save_interval = 1
@@ -153,7 +154,7 @@ if __name__ == '__main__':
 
     encoder = EncoderRNN(utils.ALPHASIZE, hidden_size)
     decoder = AttnDecoderRNN(hidden_size, utils.ALPHASIZE,
-                                1, dropout_p=0.1)
+                                num_layers, dropout_p=0.1)
 
     encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
     decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
@@ -176,7 +177,7 @@ if __name__ == '__main__':
         init_epoch = state_dict['epoch']
         print("pre-trained epoch number: {}".format(init_epoch))
 
-    lines = utils.readPoems('/home/reza/projects/ganjoorNet/ganjoor-scrapy/shahname/*.txt')
+    lines = utils.readPoems('/home/reza/projects/ganjoorNet/ganjoor-full/*.txt')
 
     print(use_cuda)
     if use_cuda:
