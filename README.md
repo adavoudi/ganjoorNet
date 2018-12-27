@@ -1,7 +1,7 @@
 # Persian Poetry Generator
 This code was originally written by Martin Gorner in this [repo](https://github.com/martin-gorner/tensorflow-rnn-shakespeare). 
 I just modified it to make compatible with persian language.I also gathered some Persian poetry from the renowned Persian 
-poet Ferdowsi from the[Ganjoor](https://ganjoor.net/) site.
+poet Ferdowsi from the [Ganjoor](https://ganjoor.net/) site.
 
 Clone this repo and execute the following command to start the training process:
 
