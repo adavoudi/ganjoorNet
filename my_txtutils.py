@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function
 import numpy as np
 import glob
 import sys
@@ -107,14 +106,14 @@ alphaToNum = {
     2000 : 39, # end of poem
 }
 
-numToAlpha = {v: k for k, v in alphaToNum.iteritems()}
+numToAlpha = {v: k for k, v in alphaToNum.items()}
 
 def convert_from_alphabet(a):
     """Encode a character
     :param a: one character
     :return: the encoded value
     """
-    if alphaToNum.has_key(a):
+    if a in alphaToNum:
         return alphaToNum[a]
     else:
         return alphaToNum[0]  # unknown
@@ -131,8 +130,8 @@ def convert_to_alphabet(c, avoid_tab_and_lf=False):
     if c == 34:
         return 92 if avoid_tab_and_lf else 10  # \ instead of LF
     if c == 38 or c == 39: # start of poem
-	return 45 # ie '-'
-    if numToAlpha.has_key(c):
+        return 45 # ie '-'
+    if c in numToAlpha:
         return numToAlpha[c]
     else:
         return numToAlpha[0]  # unknown
@@ -149,7 +148,7 @@ def convert_to_alphabet_viz(c, avoid_tab_and_lf=False):
         return '\\' if avoid_tab_and_lf else '\n'  # \ instead of LF
     if c == 38 or c == 39: # start of poem
         return 45 # ie '-'
-    if farsiToPingilish.has_key(c):
+    if c in farsiToPingilish:
         return farsiToPingilish[c]
     else:
         return farsiToPingilish[0]  # unknown
@@ -179,7 +178,7 @@ def decode_to_text(c, avoid_tab_and_lf=False):
     :param avoid_tab_and_lf: if True, tab and line feed characters are replaced by '\'
     :return:
     """
-    return "".join(map(lambda a: unichr(convert_to_alphabet(a, avoid_tab_and_lf)), c))
+    return "".join(map(lambda a: chr(convert_to_alphabet(a, avoid_tab_and_lf)), c))
 
 
 def sample_from_probabilities(probabilities, topn=ALPHASIZE):
@@ -350,9 +349,9 @@ def read_data_files(directory, validation=True):
         shaketext = open(shakefile, "r")
         print("Loading file " + shakefile)
         start = len(codetext)
-	codetext.extend([1000, 34])
+        codetext.extend([1000, 34])
         codetext.extend(encode_text(shaketext.read().decode('utf8')))
-	codetext.extend([34,2000])
+        codetext.extend([34,2000])
         end = len(codetext)
         bookranges.append({"start": start, "end": end, "name": shakefile.rsplit("/", 1)[-1]})
         shaketext.close()
